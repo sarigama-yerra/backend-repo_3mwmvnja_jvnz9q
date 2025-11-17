@@ -12,9 +12,7 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
-
-# Example schemas (replace with your own):
+from typing import Optional, List
 
 class User(BaseModel):
     """
@@ -34,15 +32,20 @@ class Product(BaseModel):
     """
     title: str = Field(..., description="Product title")
     description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
+    price_cents: int = Field(..., ge=0, description="Price in cents")
+    currency: str = Field("eur", description="ISO currency code")
+    category: str = Field("T-Shirts", description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
+    slug: str = Field(..., description="URL-friendly unique identifier")
+    images: List[str] = Field(default_factory=list, description="Image URLs")
+    colors: List[str] = Field(default_factory=list, description="Available colors")
+    sizes: List[str] = Field(default_factory=lambda: ["S","M","L","XL"], description="Available sizes")
+    sku: Optional[str] = Field(None, description="Stock keeping unit")
 
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Order(BaseModel):
+    """Orders collection schema"""
+    email: str = Field(..., description="Customer email")
+    items: list = Field(..., description="List of purchased items")
+    amount_total: int = Field(..., ge=0, description="Total amount in cents")
+    currency: str = Field("eur", description="Currency")
+    stripe_session_id: Optional[str] = Field(None, description="Stripe checkout session id")
